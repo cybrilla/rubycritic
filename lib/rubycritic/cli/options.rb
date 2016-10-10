@@ -19,6 +19,12 @@ module RubyCritic
             @root = path
           end
 
+          opts.on('-b', '--base_branch BRANCH, FEATURE_BRANCH', "Set base branch") do |branches|
+            self.base_branch = branches.split(',')[0].strip
+            self.feature_branch = branches.split(',')[1].strip
+            self.compare_between_branches = true
+          end
+
           opts.on(
             '-f', '--format [FORMAT]',
             [:html, :json, :console],
@@ -71,14 +77,17 @@ module RubyCritic
           suppress_ratings: suppress_ratings,
           help_text: parser.help,
           minimum_score: minimum_score || 0,
-          no_browser: no_browser
+          no_browser: no_browser,
+          base_branch: base_branch,
+          feature_branch: feature_branch,
+          compare_between_branches: compare_between_branches
         }
       end
 
       private
 
       attr_accessor :mode, :root, :format, :deduplicate_symlinks,
-                    :suppress_ratings, :minimum_score, :no_browser, :parser
+                    :suppress_ratings, :minimum_score, :no_browser, :parser, :base_branch, :feature_branch, :compare_between_branches
       def paths
         if @argv.empty?
           ['.']
