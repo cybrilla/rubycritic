@@ -16,6 +16,10 @@ module RubyCritic
         update_status
       end
 
+      def status_message=(status_message)
+        @status_message = status_message
+      end
+
       private
 
       def update_status
