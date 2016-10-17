@@ -16,14 +16,25 @@ module RubyCritic
     ZERO_SCORE_COST = 16
     COST_MULTIPLIER = MAX_SCORE.to_f / ZERO_SCORE_COST
 
-    def initialize(paths)
-      @modules = SourceLocator.new(paths).pathnames.map do |pathname|
-        AnalysedModule.new(pathname: pathname)
-      end
+    def initialize(paths, modules = nil)
+      unless modules.nil?
+        @modules = SourceLocator.new(paths).pathnames.map do |pathname|
+          mod = modules.find { |mod|  mod.pathname == pathname }
+          AnalysedModule.new(pathname: mod.pathname, name: mod.name, smells: mod.smells, churn: mod.churn, committed_at: mod.committed_at, complexity: mod.complexity, duplication: mod.duplication, methods_count: mod.methods_count)
+        end  
+      else
+        @modules = SourceLocator.new(paths).pathnames.map do |pathname|
+          AnalysedModule.new(pathname: pathname)
+        end
+      end 
     end
 
     def each(&block)
       @modules.each(&block)
+    end
+
+    def where(module_names)
+      @modules.find_all { |mod|  module_names.include? mod.name }
     end
 
     def to_json(*options)
