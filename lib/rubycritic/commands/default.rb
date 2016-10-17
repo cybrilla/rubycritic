@@ -16,7 +16,8 @@ module RubyCritic
         @feature_branch_hash = {}
         @files_affected = []
         @new_files = []
-        @deleted_files =[]
+        @deleted_files = []
+        @analysed_modules
       end
 
       def execute
@@ -25,6 +26,10 @@ module RubyCritic
           switch_to_feature_branch_and_compare
           get_degraded_files
           get_file_details
+          defected_modules = @analysed_modules.where(@files_affected)
+          paths = defected_modules.map { |mod| mod.path }
+          analysed_modules = AnalysedModulesCollection.new(paths, defected_modules)
+          Reporter.generate_report(analysed_modules)
           compare_code_quality
         else
           report(critique)
@@ -33,13 +38,11 @@ module RubyCritic
       end
 
       def switch_to_base_branch_and_compare
-        p '============ Base Branch ============='
         `git checkout #{Config.base_branch}`
         Config.base_branch_score = critique('base_hash', true).score
       end
 
       def switch_to_feature_branch_and_compare
-        p '============ Feature Branch ============='
         `git checkout #{Config.feature_branch}`
         Config.feature_branch_score = critique('feature_hash', true).score
         `git checkout #{Config.base_branch}`
@@ -57,7 +60,7 @@ module RubyCritic
 
       def get_degraded_files
         @feature_branch_hash.each do |k,v|
-          @files_affected << k if @base_branch_hash[k.to_sym] < v
+          @files_affected << k.to_s if @base_branch_hash[k.to_sym] < v
         end
       end
 
@@ -73,6 +76,7 @@ module RubyCritic
 
       def critique(cost_hash = nil, code_analysis = false)
         analysed_modules = AnalysersRunner.new(paths).run
+        @analysed_modules = analysed_modules
         build_cost_hash(cost_hash, analysed_modules) if code_analysis
         RevisionComparator.new(paths).set_statuses(analysed_modules)
       end
@@ -80,7 +84,7 @@ module RubyCritic
       def build_cost_hash(cost_hash, analysed_modules)
         complexity_hash = get_hash(cost_hash)
         analysed_modules.each do |analysed_module|
-          complexity_hash.merge!({ "#{analysed_module.name}": analysed_module.smells.map(&:cost).inject(0, :+) + (analysed_module.complexity / 25)}) 
+          complexity_hash.merge!({ "#{analysed_module.name}": analysed_module.cost }) 
         end
       end
 
