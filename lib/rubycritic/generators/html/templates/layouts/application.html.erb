@@ -11,11 +11,16 @@
   <body>
     <header class="project-header group">
       <div class="container">
-        <h1 class="logo"><a href="<%= file_path('overview.html') %>" class="logo-link">RubyCritic</a></h1>
+        <h1 class="logo"><a href="<%= file_path('overview.html') %>" class="logo-link"><%= get_branch %></a></h1>
         <nav class="project-nav">
           <a href="<%= file_path('overview.html') %>" class="project-nav-item">Overview</a>
           <a href="<%= file_path('code_index.html') %>" class="project-nav-item">Code</a>
           <a href="<%= file_path('smells_index.html') %>" class="project-nav-item">Smells</a>
+          <% if Config.compare_between_branches %>
+            <a href="<%= code_index_path('base') %>" class="project-nav-item"><%= Config.base_branch %></a>
+            <a href="<%= code_index_path('feature') %>" class="project-nav-item"><%= Config.feature_branch %></a>
+            <a href="<%= code_index_path('build') %>" class="project-nav-item">Build</a>
+          <% end %>
         </nav>
       </div>
     </header>

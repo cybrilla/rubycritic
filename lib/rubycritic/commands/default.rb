@@ -18,44 +18,89 @@ module RubyCritic
         @new_files = []
         @deleted_files = []
         @analysed_modules
+        @number
       end
 
       def execute
         if Config.compare_between_branches  
-          switch_to_base_branch_and_compare
-          switch_to_feature_branch_and_compare
-          get_degraded_files
-          get_file_details
-          defected_modules = @analysed_modules.where(@files_affected)
-          paths = defected_modules.map { |mod| mod.path }
-          analysed_modules = AnalysedModulesCollection.new(paths, defected_modules)
-          Reporter.generate_report(analysed_modules)
-          compare_code_quality
+          compare_branches
         else
           report(critique)
           status_reporter
         end
       end
 
+      def compare_branches
+        update_build_number
+        set_root_paths
+        switch_to_base_branch_and_compare
+        switch_to_feature_branch_and_compare
+        feature_branch_analysis
+      end
+
+      def update_build_number
+        File.new('build_count.txt', "a") unless (File.exist?('build_count.txt'))
+        @number = File.open('build_count.txt').readlines.first.to_i + 1 #find_or_create file, check if there exist a git branch.  
+        File.write('build_count.txt', @number)
+      end
+
+      def set_root_paths
+        Config.base_root_directory = Pathname.new("tmp/rubycritic/#{Config.base_branch}")
+        Config.feature_root_directory = Pathname.new("tmp/rubycritic/#{Config.feature_branch}")
+        Config.build_root_directory = Pathname.new("tmp/rubycritic/builds/build_#{@number}")
+      end
+
       def switch_to_base_branch_and_compare
         `git checkout #{Config.base_branch}`
-        Config.base_branch_score = critique('base_hash', true).score
+        critic = critique('base_hash', true)
+        Config.base_branch_score = critic.score
+        Config.root = "tmp/rubycritic/#{Config.base_branch}"
+        Config.no_browser = true
+        Config.base_branch_flag = true
+        report(critic)
+        Config.base_branch_flag = false
       end
 
       def switch_to_feature_branch_and_compare
         `git checkout #{Config.feature_branch}`
-        Config.feature_branch_score = critique('feature_hash', true).score
+        critic = critique('feature_hash', true)
+        Config.feature_branch_score = critic.score
+        Config.root = "tmp/rubycritic/#{Config.feature_branch}"
+        Config.no_browser = true
+        Config.feature_branch_flag = true
+        report(critic)
+        Config.feature_branch_flag = false
         `git checkout #{Config.base_branch}`
       end
 
+      def feature_branch_analysis
+        get_degraded_files
+        get_file_details
+        defected_modules = @analysed_modules.where(@files_affected)
+        paths = defected_modules.map { |mod| mod.path }
+        analysed_modules = AnalysedModulesCollection.new(paths, defected_modules)
+        Config.root = "tmp/rubycritic/builds/build_#{@number}"
+        Config.no_browser = false
+        Config.set_location = true
+        Config.build_flag = true
+        Reporter.generate_report(analysed_modules)
+        compare_code_quality
+      end
+
       def compare_code_quality
-        p 'Base branch score:' + Config.base_branch_score.to_s
-        p 'Feature branch score:' + Config.feature_branch_score.to_s
-        p "#{@new_files.count} New Files Addded" 
-        p "#{@deleted_files.count} Files Deleted" 
         Config.base_branch_score > Config.feature_branch_score ? Config.quality_flag = false : Config.quality_flag = true
         status_reporter.status_message = Config.quality_flag ? "GOOOOOOOOD" : "BAAAAAAAD #{@files_affected} files degraded."
+        build_details
         status_reporter
+      end
+
+      def build_details
+        details = 'Base branch score: ' + Config.base_branch_score.to_s + "\n"
+        details += 'Feature branch score: ' + Config.feature_branch_score.to_s + "\n"
+        details += "#{@new_files.count} New Files Addded" + "\n"
+        details += "#{@deleted_files.count} Files Deleted" + "\n"
+        details += status_reporter.status_message
+        File.open("#{Config.build_root_directory}/build_details.txt", 'w') {|f| f.write(details) }
       end
 
       def get_degraded_files

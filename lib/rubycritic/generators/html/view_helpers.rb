@@ -22,7 +22,32 @@ module RubyCritic
     end
 
     def smell_location_path(location)
-      file_path("#{location.pathname.sub_ext('.html')}#L#{location.line}")
+      Config.set_location ? "file://#{File.expand_path(Config.feature_root_directory)}/#{location.pathname.sub_ext('.html')}#L#{location.line}" : file_path("#{location.pathname.sub_ext('.html')}#L#{location.line}")
+    end
+
+    def get_branch
+      return Config.base_branch if Config.base_branch_flag
+      return Config.feature_branch if Config.feature_branch_flag
+      return 'Build' if Config.build_flag
+      'RubyCritic'
+    end
+
+    def code_index_path(branch)
+      return base_code_index_path if branch == 'base'
+      return feature_code_index_path if branch == 'feature'
+      build_code_index_path 
+    end
+
+    def base_code_index_path
+      "file://#{File.expand_path(Config.base_root_directory)}/code_index.html"
+    end
+
+    def feature_code_index_path
+      "file://#{File.expand_path(Config.feature_root_directory)}/code_index.html"
+    end
+
+    def build_code_index_path
+      "file://#{File.expand_path(Config.build_root_directory)}/code_index.html"
     end
 
     private
