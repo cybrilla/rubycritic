@@ -39,9 +39,9 @@ module RubyCritic
       end
 
       def update_build_number
-        File.new('build_count.txt', "a") unless (File.exist?('build_count.txt'))
-        @number = File.open('build_count.txt').readlines.first.to_i + 1 #find_or_create file, check if there exist a git branch.  
-        File.write('build_count.txt', @number)
+        File.new('/tmp/build_count.txt', "a") unless (File.exist?('/tmp/build_count.txt'))
+        @number = File.open('/tmp/build_count.txt').readlines.first.to_i + 1 #find_or_create file, check if there exist a git branch.  
+        File.write('/tmp/build_count.txt', @number)
       end
 
       def set_root_paths
@@ -95,8 +95,8 @@ module RubyCritic
       end
 
       def build_details
-        details = 'Base branch score: ' + Config.base_branch_score.to_s + "\n"
-        details += 'Feature branch score: ' + Config.feature_branch_score.to_s + "\n"
+        details = "Base branch (#{Config.base_branch}) score: " + Config.base_branch_score.to_s + "\n"
+        details += "Feature branch (#{Config.feature_branch}) score: " + Config.feature_branch_score.to_s + "\n"
         details += "#{@new_files.count} New Files Addded" + "\n"
         details += "#{@deleted_files.count} Files Deleted" + "\n"
         details += status_reporter.status_message
