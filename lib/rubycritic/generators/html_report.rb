@@ -64,7 +64,7 @@ module RubyCritic
       end
 
       def report_location
-        overview_generator.file_href
+        code_index_generator.file_href
       end
     end
   end
