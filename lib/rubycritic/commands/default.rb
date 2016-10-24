@@ -4,6 +4,8 @@ require 'rubycritic/analysers_runner'
 require 'rubycritic/revision_comparator'
 require 'rubycritic/reporter'
 require 'rubycritic/commands/base'
+require 'httparty'
+require 'yaml'
 
 module RubyCritic
   module Command
@@ -19,6 +21,7 @@ module RubyCritic
         @deleted_files = []
         @analysed_modules
         @number
+        @code_index_file_location
       end
 
       def execute
@@ -36,11 +39,13 @@ module RubyCritic
         switch_to_base_branch_and_compare
         switch_to_feature_branch_and_compare
         feature_branch_analysis
+        push_comments_to_gitlab
+        compare_code_quality
       end
 
       def update_build_number
         File.new('/tmp/build_count.txt', "a") unless (File.exist?('/tmp/build_count.txt'))
-        @number = File.open('/tmp/build_count.txt').readlines.first.to_i + 1 #find_or_create file, check if there exist a git branch.  
+        @number = File.open('/tmp/build_count.txt').readlines.first.to_i + 1 
         File.write('/tmp/build_count.txt', @number)
       end
 
@@ -48,6 +53,7 @@ module RubyCritic
         Config.base_root_directory = Pathname.new("tmp/rubycritic/#{Config.base_branch}")
         Config.feature_root_directory = Pathname.new("tmp/rubycritic/#{Config.feature_branch}")
         Config.build_root_directory = Pathname.new("tmp/rubycritic/builds/build_#{@number}")
+        Config.no_browser = true
       end
 
       def switch_to_base_branch_and_compare
@@ -55,7 +61,6 @@ module RubyCritic
         critic = critique('base_hash', true)
         Config.base_branch_score = critic.score
         Config.root = "tmp/rubycritic/#{Config.base_branch}"
-        Config.no_browser = true
         Config.base_branch_flag = true
         report(critic)
         Config.base_branch_flag = false
@@ -66,7 +71,6 @@ module RubyCritic
         critic = critique('feature_hash', true)
         Config.feature_branch_score = critic.score
         Config.root = "tmp/rubycritic/#{Config.feature_branch}"
-        Config.no_browser = true
         Config.feature_branch_flag = true
         report(critic)
         Config.feature_branch_flag = false
@@ -80,11 +84,20 @@ module RubyCritic
         paths = defected_modules.map { |mod| mod.path }
         analysed_modules = AnalysedModulesCollection.new(paths, defected_modules)
         Config.root = "tmp/rubycritic/builds/build_#{@number}"
-        Config.no_browser = false
         Config.set_location = true
         Config.build_flag = true
-        Reporter.generate_report(analysed_modules)
-        compare_code_quality
+        @code_index_file_location = Reporter.generate_report(analysed_modules)
+      end
+
+      def push_comments_to_gitlab
+        app_settings = YAML.load_file('config/rubycritic_app_settings.yml')
+        app_id = app_settings['app_id']
+        secret = app_settings['secret']
+        code_status = Config.base_branch_score > Config.feature_branch_score ? "> :negative_squared_cross_mark: **#{(Config.base_branch_score - Config.feature_branch_score).round(2)} \% Decreased** :thumbsdown: <br />" : "> :white_check_mark: **#{(Config.feature_branch_score - Config.base_branch_score).round(2)} \% Increased** :thumbsup: <br />" 
+        report = "<a href=#{@code_index_file_location} target='_blank'>View Report</a> ( " + @code_index_file_location + ' )'
+        note = URI::encode(code_status + "_#{Config.base_branch} score: #{Config.base_branch_score.round(2)}_ % <br />" + "_#{Config.feature_branch} score: #{Config.feature_branch_score.round(2)} %_ <br/>" + report )
+        HTTParty.post("https://vault.cybrilla.com/api/v3/projects/#{app_id}/merge_requests/#{Config.merge_request_id}/notes?body=#{note}",
+        :headers => {'Private-Token' => secret} )
       end
 
       def compare_code_quality
@@ -105,7 +118,7 @@ module RubyCritic
 
       def get_degraded_files
         @feature_branch_hash.each do |k,v|
-          @files_affected << k.to_s if @base_branch_hash[k.to_sym] < v
+          @files_affected << k.to_s if !@base_branch_hash[k.to_sym].nil? && @base_branch_hash[k.to_sym] < v
         end
       end
 
