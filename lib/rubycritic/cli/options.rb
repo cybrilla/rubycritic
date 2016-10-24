@@ -22,6 +22,7 @@ module RubyCritic
           opts.on('-b', '--base_branch BRANCH, FEATURE_BRANCH', "Set base branch") do |branches|
             self.base_branch = branches.split(',')[0].strip
             self.feature_branch = branches.split(',')[1].strip
+            self.merge_request_id = branches.split(',')[2].strip
             self.compare_between_branches = true
           end
 
@@ -80,14 +81,15 @@ module RubyCritic
           no_browser: no_browser,
           base_branch: base_branch,
           feature_branch: feature_branch,
-          compare_between_branches: compare_between_branches
+          compare_between_branches: compare_between_branches,
+          merge_request_id: merge_request_id
         }
       end
 
       private
 
       attr_accessor :mode, :root, :format, :deduplicate_symlinks,
-                    :suppress_ratings, :minimum_score, :no_browser, :parser, :base_branch, :feature_branch, :compare_between_branches
+                    :suppress_ratings, :minimum_score, :no_browser, :parser, :base_branch, :feature_branch, :compare_between_branches, :merge_request_id
       def paths
         if @argv.empty?
           ['.']

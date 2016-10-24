@@ -20,6 +20,7 @@ module RubyCritic
         copy_assets_to_report_directory
         puts "New critique at #{report_location}"
         browser.open unless Config.no_browser
+        report_location
       end
 
       def browser
