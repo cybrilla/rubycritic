@@ -43,11 +43,11 @@ module RubyCritic
     end
 
     def base_code_index_path
-      "file://#{File.expand_path(Config.base_root_directory)}/code_index.html"
+      "file://#{File.expand_path(Config.base_root_directory)}/overview.html"
     end
 
     def feature_code_index_path
-      "file://#{File.expand_path(Config.feature_root_directory)}/code_index.html"
+      "file://#{File.expand_path(Config.feature_root_directory)}/overview.html"
     end
 
     def build_code_index_path
