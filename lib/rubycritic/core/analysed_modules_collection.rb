@@ -19,8 +19,8 @@ module RubyCritic
     def initialize(paths, modules = nil)
       unless modules.nil?
         @modules = SourceLocator.new(paths).pathnames.map do |pathname|
-          mod = modules.find { |mod|  mod.pathname == pathname }
-          AnalysedModule.new(pathname: mod.pathname, name: mod.name, smells: mod.smells, churn: mod.churn, committed_at: mod.committed_at, complexity: mod.complexity, duplication: mod.duplication, methods_count: mod.methods_count)
+          analysed_module = modules.find { |mod|  mod.pathname == pathname }
+          AnalysedModule.new(pathname: analysed_module.pathname, name: analysed_module.name, smells: analysed_module.smells, churn: analysed_module.churn, committed_at: analysed_module.committed_at, complexity: analysed_module.complexity, duplication: analysed_module.duplication, methods_count: analysed_module.methods_count)
         end  
       else
         @modules = SourceLocator.new(paths).pathnames.map do |pathname|

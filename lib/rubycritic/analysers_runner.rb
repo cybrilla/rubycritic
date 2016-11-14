@@ -25,6 +25,7 @@ module RubyCritic
     def run
       ANALYSERS.each do |analyser_class|
         analyser_instance = analyser_class.new(analysed_modules)
+        puts "running #{analyser_instance}"
         analyser_instance.run
       end
       analysed_modules

@@ -19,11 +19,12 @@ module RubyCritic
             @root = path
           end
 
-          opts.on('-b', '--base_branch BRANCH, FEATURE_BRANCH, GITLAB_PR_ID' , "Set base branch") do |branches|
-            self.base_branch = branches.split(',')[0].strip
-            self.feature_branch = branches.split(',')[1].strip
-            self.merge_request_id = branches.split(',')[2].strip rescue nil
+          opts.on('-b', '--branch [BASE_BRANCH,FEATURE_BRANCH,GITLAB_PR_ID(optional)]' , 'Set branches') do |branches|
+            self.base_branch = String(branches.split(',')[0].strip)
+            self.feature_branch = String(branches.split(',')[1].strip)
+            self.merge_request_id = Integer(branches.split(',')[2].strip) rescue nil
             self.compare_between_branches = true
+            self.mode = :compare_branches
           end
 
           opts.on(
