@@ -72,6 +72,10 @@ a.project-nav-item:hover {
   border-bottom: 1px solid;
 }
 
+a.allign-left{
+  margin-left: 30%;
+}
+
 .chart-container {
   max-width: 1000px;
   margin: 0 auto;

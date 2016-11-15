@@ -17,24 +17,28 @@ module RubyCritic
         @base_branch_hash = {}
         @feature_branch_hash = {}
         @files_affected = []
-        @analysed_modules
-        @number
-        @code_index_file_location
-        @app_settings = load_yml
+        @analysed_modules = []
+        @number = 0
+        @code_index_file_location = ''
+        @app_settings = YAML.load_file('config/rubycritic_app_settings.yml')
       end
 
       def execute
+        Config.no_browser = true
         compare_branches
         status_reporter
       end
 
+      private
+
+      attr_reader :paths, :status_reporter
+
       def compare_branches
         update_build_number
         set_root_paths
-        switch_to_base_branch_and_compare
-        switch_to_feature_branch_and_compare
+        switch_and_compare(Config.base_branch, 'base_branch', base_root_directory)
+        switch_and_compare(Config.feature_branch, 'feature_branch', feature_root_directory)
         feature_branch_analysis
-        push_comments_to_svn if Config.merge_request_id
         compare_code_quality
       end
 
@@ -51,25 +55,16 @@ module RubyCritic
         Config.build_root_directory = Pathname.new(build_directory)
       end
 
-      def switch_to_base_branch_and_compare
-        switch_branch(Config.base_branch)
-        critic = critique('base_branch_hash')
-        Config.base_branch_score = critic.score
-        Config.root = base_root_directory
-        Config.base_branch_flag = Config.no_browser = true
+      def switch_and_compare(branch, branch_type, root_directory)
+        SourceControlSystem::Git.switch_branch(branch)
+        critic = critique("#{branch_type}_hash")
+        set_scores(branch_type, critic.score)
+        Config.root = root_directory
         report(critic)
-        Config.base_branch_flag = false
       end
 
-      def switch_to_feature_branch_and_compare
-        switch_branch(Config.feature_branch)
-        critic = critique('feature_branch_hash')
-        Config.feature_branch_score = critic.score
-        Config.root = feature_root_directory
-        Config.feature_branch_flag = Config.no_browser = true
-        report(critic)
-        Config.feature_branch_flag = false
-        switch_branch(Config.base_branch)
+      def set_scores(branch_type, score)
+        branch_type == 'base_branch' ? Config.base_branch_score = score : Config.feature_branch_score = score
       end
 
       def feature_branch_analysis
@@ -77,95 +72,46 @@ module RubyCritic
         defected_modules = @analysed_modules.where(degraded_files)
         analysed_modules = AnalysedModulesCollection.new(defected_modules.map(&:path), defected_modules)
         Config.root = build_directory
-        Config.set_location = Config.build_flag = true
+        Config.set_location = true
         @code_index_file_location = Reporter.generate_report(analysed_modules)
-        score_difference
-      end
-
-      def score_difference
-        Config.difference_score =
-          if Config.base_branch_score > Config.feature_branch_score
-            (Config.base_branch_score - Config.feature_branch_score).round(2)
-          else
-            (Config.feature_branch_score - Config.base_branch_score).round(2)
-          end
-      end
-
-      def push_comments_to_svn
-        if @app_settings['github'] 
-          push_comments_to_github 
-        elsif @app_settings['gitlab'] 
-          push_comments_to_gitlab
-        end
-      end
-
-      def push_comments_to_github
-        user_name = @app_settings['github_user_name']
-        repo_name = @app_settings['github_repo_name']
-        api_key = @app_settings['github_api_key']
-        merge_request_id = Config.merge_request_id
-        unless [user_name, repo_name, api_key, merge_request_id].all?(&:nil?)
-          HTTParty.post("https://api.github.com/repos/#{user_name}/#{repo_name}/issues/#{merge_request_id}/comments",
-          :body => {'body' => build_note}.to_json,
-          :headers => { 'Authorization' => "token #{api_key}", 'User-Agent' => "#{repo_name}" })
-        end
-      end
-
-      def push_comments_to_gitlab
-        app_id = @app_settings['gitlab_app_id']
-        secret = @app_settings['gitlab_secret']
-        gitlab_url = @app_settings['gitlab_url']
-        merge_request_id = Config.merge_request_id
-        unless [app_id, secret, gitlab_url, merge_request_id].all?(&:nil?)
-          HTTParty.post("#{gitlab_url}/api/v3/projects/#{app_id}/merge_requests/#{merge_request_id}/notes",
-          :query => {'body' => build_note},
-          :headers => {'Private-Token' => secret} )
-        end
-      end
-
-      def build_note  
-        ERB.new(File.read(File.join(File.dirname(__FILE__), '../generators/html/templates/note.html.erb')), nil, '-').result(binding).delete("\n") + "\n"
       end
 
       def compare_code_quality
-        Config.base_branch_score > Config.feature_branch_score ? Config.quality_flag = false : Config.quality_flag = true
-        status_reporter.status_message = Config.quality_flag ? "GOOOOOOOOD" : "BAAAAAAAD #{@files_affected} files degraded."
         build_details
         compare_threshold
       end
 
       def compare_threshold
-        `exit 1` if mark_jenkins_build_fail 
+        `exit 1` if mark_build_fail? 
       end
 
-      def mark_jenkins_build_fail
-        [@app_settings['app_threshold'], @app_settings['difference_threshold']].all?(&:nil?) ? false : (Config.base_branch_score < @app_settings['app_threshold'] || (Config.base_branch_score - Config.feature_branch_score) > @app_settings['difference_threshold']) 
+      def mark_build_fail?
+        threshold_values_set? && threshold_reached?
+      end
+
+      def threshold_values_set?
+        !@app_settings['difference_threshold'].nil?
+      end
+
+      def threshold_reached?
+        (Config.base_branch_score - Config.feature_branch_score).abs > @app_settings['difference_threshold']
       end
 
       def base_root_directory
-        "tmp/rubycritic/#{Config.base_branch}"
+        "tmp/rubycritic/compare/#{Config.base_branch}"
       end
 
       def feature_root_directory
-        "tmp/rubycritic/#{Config.feature_branch}"
+        "tmp/rubycritic/compare/#{Config.feature_branch}"
       end
 
       def build_directory
-        "tmp/rubycritic/builds/build_#{@number}"
-      end
-
-      def switch_branch(branch)
-        `git checkout #{branch}`
-      end
-
-      def load_yml
-        YAML.load_file('config/rubycritic_app_settings.yml')
+        "tmp/rubycritic/compare/builds/build_#{@number}"
       end
 
       def build_details
         details = "Base branch (#{Config.base_branch}) score: " + Config.base_branch_score.to_s + "\n"
         details += "Feature branch (#{Config.feature_branch}) score: " + Config.feature_branch_score.to_s + "\n"
-        details += status_reporter.status_message
         File.open("#{Config.build_root_directory}/build_details.txt", 'w') {|f| f.write(details) }
       end
 
@@ -184,20 +130,15 @@ module RubyCritic
       end
 
       def critique(cost_hash)
-        analysed_modules = AnalysersRunner.new(paths).run
-        @analysed_modules = analysed_modules
-        build_cost_hash(cost_hash, analysed_modules)
-        RevisionComparator.new(paths).set_statuses(analysed_modules)
+        @analysed_modules = AnalysersRunner.new(paths).run
+        build_cost_hash(cost_hash, @analysed_modules)
+        RevisionComparator.new(paths).set_statuses(@analysed_modules)
       end
 
       def report(analysed_modules)
         Reporter.generate_report(analysed_modules)
         status_reporter.score = analysed_modules.score
       end
-
-      private
-
-      attr_reader :paths, :status_reporter
     end
   end
 end
