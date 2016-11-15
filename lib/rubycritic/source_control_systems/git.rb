@@ -35,6 +35,10 @@ module RubyCritic
         travel_to_original_state if stash_successful
       end
 
+      def self.switch_branch(branch)
+        `git checkout #{branch}` && $?.success?
+      end
+
       private
 
       def stash_changes

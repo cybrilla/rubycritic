@@ -3,8 +3,10 @@ module RubyCritic
   class Configuration
     attr_reader :root
     attr_accessor :source_control_system, :mode, :format, :deduplicate_symlinks,
-                  :suppress_ratings, :open_with, :no_browser, :base_branch, :feature_branch, :compare_between_branches ,:base_branch_score, :feature_branch_score, :quality_flag,
-                  :base_root_directory, :feature_root_directory, :build_root_directory, :set_location, :base_branch_flag, :feature_branch_flag, :build_flag, :merge_request_id, :difference_score
+                  :suppress_ratings, :open_with, :no_browser, :base_branch, 
+                  :feature_branch, :base_branch_score, :feature_branch_score, 
+                  :base_root_directory, :feature_root_directory, 
+                  :build_root_directory, :set_location
 
     def set(options)
       self.mode = options[:mode] || :default
@@ -16,12 +18,6 @@ module RubyCritic
       self.no_browser = options[:no_browser]
       self.base_branch = options[:base_branch]
       self.feature_branch = options[:feature_branch]
-      self.compare_between_branches = options[:compare_between_branches]
-      self.set_location = false
-      self.feature_branch_flag = false
-      self.base_branch_flag = false
-      self.build_flag = false
-      self.merge_request_id = options[:merge_request_id]
     end
 
     def root=(path)

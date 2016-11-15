@@ -19,11 +19,9 @@ module RubyCritic
             @root = path
           end
 
-          opts.on('-b', '--branch [BASE_BRANCH,FEATURE_BRANCH,GITLAB_PR_ID(optional)]' , 'Set branches') do |branches|
+          opts.on('-b', '--branch BASE_BRANCH,FEATURE_BRANCH' , 'Set branches') do |branches|
             self.base_branch = String(branches.split(',')[0].strip)
             self.feature_branch = String(branches.split(',')[1].strip)
-            self.merge_request_id = Integer(branches.split(',')[2].strip) rescue nil
-            self.compare_between_branches = true
             self.mode = :compare_branches
           end
 
@@ -82,7 +80,6 @@ module RubyCritic
           no_browser: no_browser,
           base_branch: base_branch,
           feature_branch: feature_branch,
-          compare_between_branches: compare_between_branches,
           merge_request_id: merge_request_id
         }
       end
@@ -90,7 +87,7 @@ module RubyCritic
       private
 
       attr_accessor :mode, :root, :format, :deduplicate_symlinks,
-                    :suppress_ratings, :minimum_score, :no_browser, :parser, :base_branch, :feature_branch, :compare_between_branches, :merge_request_id
+                    :suppress_ratings, :minimum_score, :no_browser, :parser, :base_branch, :feature_branch, :merge_request_id
       def paths
         if @argv.empty?
           ['.']

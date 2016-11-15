@@ -19,8 +19,5 @@ tmp
 .idea/
 .ruby-gemset
 .ruby-version
-<<<<<<< HEAD
 .DS_Store
-=======
 *.DS_Store
->>>>>>> Gitlab Integration
