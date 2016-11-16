@@ -3,8 +3,29 @@ require 'test_helper'
 require 'rubycritic/commands/compare'
 require 'rubycritic/cli/options'
 require 'rubycritic/configuration'
+require 'rubycritic/source_control_systems/git'
 
 describe RubyCritic::Command::Compare do
+
+  describe 'compare' do
+    it 'should compare two files of different branch' do
+      object = RubyCritic::SourceControlSystem::Git
+      object.stubs(:switch_branch).with(:branch) do |arg|
+        File.open('test/samples/compare_file.rb', 'w') {|file| file.truncate(0) }
+        File.open('test/samples/compare_file.rb', 'w') {|o| o.puts File.readlines("test/samples/#{arg}_file.rb")}
+        if arg == 'base_branch'
+          true
+        elsif arg == 'feature_branch'
+          true
+        end
+      end
+      options = RubyCritic::Cli::Options.new(['-b', 'base_branch,feature_branch', '-t', '10', 'test/samples/compare_file.rb']).parse.to_h
+      RubyCritic::Config.set(options)
+      status_reporter = RubyCritic::Command::Compare.new(options).execute
+      status_reporter.score.must_equal 6.25
+      status_reporter.status_message.must_equal 'Score: 6.25'
+    end
+  end
 
   describe 'with default options passing two branches' do
     before do
@@ -20,7 +41,6 @@ describe RubyCritic::Command::Compare do
 
   describe 'create cost hash from analysed modules collection' do
     subject { RubyCritic::AnalysedModulesCollection.new(paths, base_analysed_modules) }
-
 
     context 'with analysed_modules_collection create cost hash' do
       let(:paths) { %w(test/samples/empty.rb  test/samples/unparsable.rb) }

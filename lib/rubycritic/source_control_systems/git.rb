@@ -36,7 +36,11 @@ module RubyCritic
       end
 
       def self.switch_branch(branch)
-        `git checkout #{branch}` && $?.success?
+        uncommitted_changes? ? `git checkout #{branch}` : abort("Uncommitted changes are present.")
+      end
+
+      def self.uncommitted_changes?
+        `git ls-files --other --exclude-standard --directory`.empty? && `git status --porcelain`.empty?
       end
 
       private

@@ -25,6 +25,10 @@ module RubyCritic
             self.mode = :compare_branches
           end
 
+          opts.on('-t', '--threshold-score [THRESHOLD_SCORE]', 'Set a threshold score') do |threshold_score|
+            self.threshold_score = Integer(threshold_score)
+          end
+
           opts.on(
             '-f', '--format [FORMAT]',
             [:html, :json, :console],
@@ -80,14 +84,14 @@ module RubyCritic
           no_browser: no_browser,
           base_branch: base_branch,
           feature_branch: feature_branch,
-          merge_request_id: merge_request_id
+          threshold_score: threshold_score || 0
         }
       end
 
       private
 
       attr_accessor :mode, :root, :format, :deduplicate_symlinks,
-                    :suppress_ratings, :minimum_score, :no_browser, :parser, :base_branch, :feature_branch, :merge_request_id
+                    :suppress_ratings, :minimum_score, :no_browser, :parser, :base_branch, :feature_branch, :threshold_score
       def paths
         if @argv.empty?
           ['.']

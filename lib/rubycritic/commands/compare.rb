@@ -20,12 +20,12 @@ module RubyCritic
         @analysed_modules = []
         @number = 0
         @code_index_file_location = ''
-        @app_settings = YAML.load_file('config/rubycritic_app_settings.yml')
       end
 
       def execute
         Config.no_browser = true
         compare_branches
+        status_reporter.score = (Config.base_branch_score - Config.feature_branch_score).abs
         status_reporter
       end
 
@@ -90,11 +90,11 @@ module RubyCritic
       end
 
       def threshold_values_set?
-        !@app_settings['difference_threshold'].nil?
+        Config.threshold_score > 0
       end
 
       def threshold_reached?
-        (Config.base_branch_score - Config.feature_branch_score).abs > @app_settings['difference_threshold']
+        (Config.base_branch_score - Config.feature_branch_score).abs > Config.threshold_score
       end
 
       def base_root_directory

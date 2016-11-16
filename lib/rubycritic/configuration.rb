@@ -6,7 +6,7 @@ module RubyCritic
                   :suppress_ratings, :open_with, :no_browser, :base_branch, 
                   :feature_branch, :base_branch_score, :feature_branch_score, 
                   :base_root_directory, :feature_root_directory, 
-                  :build_root_directory, :set_location
+                  :build_root_directory, :set_location, :threshold_score
 
     def set(options)
       self.mode = options[:mode] || :default
@@ -18,6 +18,7 @@ module RubyCritic
       self.no_browser = options[:no_browser]
       self.base_branch = options[:base_branch]
       self.feature_branch = options[:feature_branch]
+      self.threshold_score = options[:threshold_score]
     end
 
     def root=(path)
