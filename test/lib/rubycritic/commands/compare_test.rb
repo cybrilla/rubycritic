@@ -24,6 +24,7 @@ describe RubyCritic::Command::Compare do
       status_reporter = RubyCritic::Command::Compare.new(options).execute
       status_reporter.score.must_equal 6.25
       status_reporter.status_message.must_equal 'Score: 6.25'
+      File.open('test/samples/compare_file.rb', 'w') {|file| file.truncate(0) }
     end
   end
 
