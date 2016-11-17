@@ -4,16 +4,13 @@ require 'rubycritic/analysers_runner'
 require 'rubycritic/revision_comparator'
 require 'rubycritic/reporter'
 require 'rubycritic/commands/base'
-require 'httparty'
-require 'yaml'
+require 'rubycritic/commands/default'
 
 module RubyCritic
   module Command
-    class Compare < Base
+    class Compare < Default
       def initialize(options)
         super
-        @paths = options[:paths]
-        Config.source_control_system = SourceControlSystem::Base.create
         @base_branch_hash = {}
         @feature_branch_hash = {}
         @files_affected = []
@@ -133,11 +130,6 @@ module RubyCritic
         @analysed_modules = AnalysersRunner.new(paths).run
         build_cost_hash(cost_hash, @analysed_modules)
         RevisionComparator.new(paths).set_statuses(@analysed_modules)
-      end
-
-      def report(analysed_modules)
-        Reporter.generate_report(analysed_modules)
-        status_reporter.score = analysed_modules.score
       end
     end
   end
