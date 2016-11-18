@@ -3,10 +3,11 @@ module RubyCritic
   class Configuration
     attr_reader :root
     attr_accessor :source_control_system, :mode, :format, :deduplicate_symlinks,
-                  :suppress_ratings, :open_with, :no_browser, :base_branch, 
-                  :feature_branch, :base_branch_score, :feature_branch_score, 
-                  :base_root_directory, :feature_root_directory, 
-                  :build_root_directory, :set_location, :threshold_score
+                  :suppress_ratings, :open_with, :no_browser, :base_branch,
+                  :feature_branch, :base_branch_score, :feature_branch_score,
+                  :base_root_directory, :feature_root_directory,
+                  :build_root_directory, :set_location, :threshold_score,
+                  :test_mode
 
     def set(options)
       self.mode = options[:mode] || :default

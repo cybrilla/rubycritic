@@ -17,19 +17,21 @@ module RubyCritic
     COST_MULTIPLIER = MAX_SCORE.to_f / ZERO_SCORE_COST
 
     def initialize(paths, modules = nil)
-      unless modules.nil?
-        @modules = SourceLocator.new(paths).pathnames.map do |pathname|
-          analysed_module = modules.find { |mod|  mod.pathname == pathname }
-          AnalysedModule.new(pathname: analysed_module.pathname, name: analysed_module.name,
-          smells: analysed_module.smells, churn: analysed_module.churn, 
-          committed_at: analysed_module.committed_at,complexity: analysed_module.complexity, 
-          duplication: analysed_module.duplication, methods_count: analysed_module.methods_count)
-        end  
-      else
-        @modules = SourceLocator.new(paths).pathnames.map do |pathname|
+      @modules = SourceLocator.new(paths).pathnames.map do |pathname|
+        if modules
+          analysed_module = modules.find { |mod| mod.pathname == pathname }
+          build_analysed_module(analysed_module)
+        else
           AnalysedModule.new(pathname: pathname)
         end
-      end 
+      end
+    end
+
+    def build_analysed_module(analysed_module)
+      AnalysedModule.new(pathname: analysed_module.pathname, name: analysed_module.name,
+                         smells: analysed_module.smells, churn: analysed_module.churn,
+                         committed_at: analysed_module.committed_at, complexity: analysed_module.complexity,
+                         duplication: analysed_module.duplication, methods_count: analysed_module.methods_count)
     end
 
     def each(&block)
@@ -37,7 +39,7 @@ module RubyCritic
     end
 
     def where(module_names)
-      @modules.find_all { |mod|  module_names.include? mod.name }
+      @modules.find_all { |mod| module_names.include? mod.name }
     end
 
     def to_json(*options)

@@ -19,9 +19,8 @@ module RubyCritic
             @root = path
           end
 
-          opts.on('-b', '--branch BASE_BRANCH,FEATURE_BRANCH' , 'Set branches') do |branches|
-            self.base_branch = String(branches.split(',')[0].strip)
-            self.feature_branch = String(branches.split(',')[1].strip)
+          opts.on('-b', '--branch BASE_BRANCH,FEATURE_BRANCH', 'Set branches') do |branches|
+            self.base_branch, self.feature_branch = branches.split(',').map { |branch| String(branch) }
             self.mode = :compare_branches
           end
 
@@ -91,7 +90,8 @@ module RubyCritic
       private
 
       attr_accessor :mode, :root, :format, :deduplicate_symlinks,
-                    :suppress_ratings, :minimum_score, :no_browser, :parser, :base_branch, :feature_branch, :threshold_score
+                    :suppress_ratings, :minimum_score, :no_browser,
+                    :parser, :base_branch, :feature_branch, :threshold_score
       def paths
         if @argv.empty?
           ['.']
