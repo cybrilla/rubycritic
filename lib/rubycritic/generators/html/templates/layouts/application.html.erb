@@ -17,9 +17,9 @@
           <a href="<%= file_path('code_index.html') %>" class="project-nav-item">Code</a>
           <a href="<%= file_path('smells_index.html') %>" class="project-nav-item">Smells</a>
           <% if Config.mode == :compare_branches %>
-            <a href="<%= code_index_path('base') %>" class="project-nav-item allign-left"><%= Config.base_branch %></a>
-            <a href="<%= code_index_path('feature') %>" class="project-nav-item"><%= Config.feature_branch %></a>
-            <a href="<%= code_index_path('build') %>" class="project-nav-item">Build</a>
+            <a href="<%= code_index_path("#{Config.base_root_directory}") %>" class="project-nav-item allign-left"><%= Config.base_branch %></a>
+            <a href="<%= code_index_path("#{Config.feature_root_directory}") %>" class="project-nav-item"><%= Config.feature_branch %></a>
+            <a href="<%= code_index_path("#{Config.build_root_directory}") %>" class="project-nav-item">Build</a>
           <% end %>
         </nav>
       </div>

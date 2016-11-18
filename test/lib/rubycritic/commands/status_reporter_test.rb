@@ -30,12 +30,6 @@ describe RubyCritic::Command::StatusReporter do
       @reporter.status.must_equal success_status
       @reporter.status_message.must_equal 'Score: 98.95'
     end
-
-    it 'accept a status_message' do
-      @reporter.status_message = 'Staus Message'
-      @reporter.status.must_equal success_status
-      @reporter.status_message.must_equal 'Staus Message'
-    end
   end
 
   describe 'with minimum-score option' do
