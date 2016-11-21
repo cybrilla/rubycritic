@@ -35,6 +35,8 @@ module RubyCritic
         compare_code_quality
       end
 
+      # to keep track of the number of builds and
+      # to keep information of each build in separate subdirectory
       def update_build_number
         build_file_location = '/tmp/build_count.txt'
         File.new(build_file_location, 'a') unless File.exist?(build_file_location)
@@ -58,7 +60,7 @@ module RubyCritic
 
       def feature_branch_analysis
         Config.no_browser = false unless Config.test_mode
-        defected_modules = @analysed_modules.where(degraded_files)
+        defected_modules = @analysed_modules.where(degraded_files.flatten)
         analysed_modules = AnalysedModulesCollection.new(defected_modules.map(&:path), defected_modules)
         Config.root = build_directory
         Config.set_location = true
@@ -106,18 +108,15 @@ module RubyCritic
 
       def degraded_files
         files_affected = []
-        @feature_branch.each do |key, value|
+        @feature_branch.map do |key, value|
           base_branch_value = @base_branch[key.to_sym]
           files_affected << key.to_s if base_branch_value && base_branch_value < value
         end
-        files_affected
       end
 
       def build_cost_hash(cost_hash, analysed_modules)
         complexity_hash = eval("@#{cost_hash}")
-        analysed_modules.each do |analysed_module|
-          complexity_hash.merge!(:"#{analysed_module.name}" => analysed_module.cost)
-        end
+        analysed_modules.map { |analysed_module| complexity_hash.merge!(:"#{analysed_module.name}" => analysed_module.cost) }
       end
 
       def critique(cost_hash)

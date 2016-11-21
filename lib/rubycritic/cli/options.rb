@@ -19,12 +19,12 @@ module RubyCritic
             @root = path
           end
 
-          opts.on('-b', '--branch BASE_BRANCH,FEATURE_BRANCH', 'Set branches') do |branches|
+          opts.on('-b', '--branch BASE_BRANCH,FEATURE_BRANCH', 'Set branches to compare') do |branches|
             self.base_branch, self.feature_branch = branches.split(',').map { |branch| String(branch) }
             self.mode = :compare_branches
           end
 
-          opts.on('-t', '--threshold-score [THRESHOLD_SCORE]', 'Set a threshold score') do |threshold_score|
+          opts.on('-t', '--threshold-score [THRESHOLD_SCORE]', 'Set a threshold score works only with -b option') do |threshold_score|
             self.threshold_score = Integer(threshold_score)
           end
 

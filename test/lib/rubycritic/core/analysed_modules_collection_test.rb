@@ -61,10 +61,10 @@ describe RubyCritic::AnalysedModulesCollection do
 
     context 'with a list of files and initializing analysed modules with pre existing values' do
       let(:paths) { %w(test/samples/empty.rb test/samples/unparsable.rb) }
-      let(:analysed_modules) { [RubyCritic::AnalysedModule.new(pathname: Pathname.new('test/samples/empty.rb'), name: 'Empty'),
-                                RubyCritic::AnalysedModule.new(pathname: Pathname.new('test/samples/unparsable.rb'), name: 'Unparsable'),
-                                ] 
-                              }
+      let(:analysed_modules) do
+        [RubyCritic::AnalysedModule.new(pathname: Pathname.new('test/samples/empty.rb'), name: 'Empty'),
+        RubyCritic::AnalysedModule.new(pathname: Pathname.new('test/samples/unparsable.rb'), name: 'Unparsable')] 
+      end
 
       it 'registers one AnalysedModule element per existent file' do
         subject.count.must_equal 2
