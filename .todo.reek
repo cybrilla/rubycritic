@@ -74,9 +74,9 @@ Attribute:
   - RubyCritic::Configuration#feature_branch
   - RubyCritic::Configuration#feature_branch_score
   - RubyCritic::Configuration#feature_root_directory
-  - RubyCritic::Configuration#set_location
-  - RubyCritic::Configuration#test_mode
   - RubyCritic::Configuration#threshold_score
+  - RubyCritic::Configuration#base_branch_collection
+  - RubyCritic::Configuration#feature_branch_collection
   - RubyCritic::RakeTask#name
   - RubyCritic::RakeTask#options
   - RubyCritic::RakeTask#paths

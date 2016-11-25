@@ -68,8 +68,8 @@ describe RubyCritic::AnalysedModulesCollection do
 
       it 'registers one AnalysedModule element per existent file' do
         subject.count.must_equal 2
-        subject.where(['Empty']).count.must_equal 1
-        subject.where(['Unparsable']).count.must_equal 1
+        subject.where(['test/samples/empty.rb']).count.must_equal 1
+        subject.where(['test/samples/unparsable.rb']).count.must_equal 1
       end
     end
   end

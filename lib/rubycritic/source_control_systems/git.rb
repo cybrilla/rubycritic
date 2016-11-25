@@ -43,6 +43,10 @@ module RubyCritic
         `git ls-files --other --exclude-standard --directory`.empty? && `git status --porcelain`.empty?
       end
 
+      def self.modified_files
+        `git diff --name-status #{Config.base_branch} #{Config.feature_branch}`
+      end
+
       private
 
       def stash_changes
