@@ -11,8 +11,6 @@ module RubyCritic
     class Compare < Default
       def initialize(options)
         super
-        @base_branch = {}
-        @feature_branch = {}
       end
 
       def execute
@@ -29,14 +27,14 @@ module RubyCritic
       def compare_branches
         update_build_number
         set_root_paths
-        switch_and_compare(Config.base_branch, 'base_branch', base_root_directory)
-        switch_and_compare(Config.feature_branch, 'feature_branch', feature_root_directory)
-        feature_branch_analysis
+        analyse_branch(:base_branch)
+        analyse_branch(:feature_branch)
+        analyse_modified_files
         compare_code_quality
       end
 
-      # to keep track of the number of builds and
-      # to keep information of each build in separate subdirectory
+      # keep track of the number of builds and
+      # use this build number to create seperate directory for each build
       def update_build_number
         build_file_location = '/tmp/build_count.txt'
         File.new(build_file_location, 'a') unless File.exist?(build_file_location)
@@ -45,25 +43,26 @@ module RubyCritic
       end
 
       def set_root_paths
-        Config.base_root_directory = Pathname.new(base_root_directory)
-        Config.feature_root_directory = Pathname.new(feature_root_directory)
+        Config.base_root_directory = Pathname.new(branch_directory(:base_branch))
+        Config.feature_root_directory = Pathname.new(branch_directory(:feature_branch))
         Config.build_root_directory = Pathname.new(build_directory)
       end
 
-      def switch_and_compare(branch, branch_type, root_directory)
-        SourceControlSystem::Git.switch_branch(branch)
-        critic = critique("#{branch_type}")
-        Config.send(:"#{branch_type}_score=", critic.score)
-        Config.root = root_directory
+      # switch branch and analyse files 
+      def analyse_branch(branch)
+        SourceControlSystem::Git.switch_branch(Config.send(branch))
+        critic = critique(branch)
+        Config.send(:"#{branch}_score=", critic.score)
+        Config.root = branch_directory(branch)
         report(critic)
       end
 
-      def feature_branch_analysis
-        Config.no_browser = false unless Config.test_mode
-        defected_modules = @analysed_modules.where(degraded_files.flatten)
+      # generate report only for modified files
+      def analyse_modified_files
+        Config.no_browser = false
+        defected_modules = Config.feature_branch_collection.where(modified_files)
         analysed_modules = AnalysedModulesCollection.new(defected_modules.map(&:path), defected_modules)
         Config.root = build_directory
-        Config.set_location = true
         report(analysed_modules)
       end
 
@@ -72,6 +71,8 @@ module RubyCritic
         compare_threshold
       end
 
+      # mark build as failed if the diff b/w the score of
+      # two branches is greater than threshold value
       def compare_threshold
         `exit 1` if mark_build_fail?
       end
@@ -88,41 +89,36 @@ module RubyCritic
         (Config.base_branch_score - Config.feature_branch_score).abs > Config.threshold_score
       end
 
-      def base_root_directory
-        "tmp/rubycritic/compare/#{Config.base_branch}"
-      end
-
-      def feature_root_directory
-        "tmp/rubycritic/compare/#{Config.feature_branch}"
+      def branch_directory(branch)
+        "tmp/rubycritic/compare/#{Config.send(branch)}"
       end
 
       def build_directory
         "tmp/rubycritic/compare/builds/build_#{@number}"
       end
 
+      # create a txt file with the branch score details
       def build_details
-        details = "Base branch (#{Config.base_branch}) score: " + Config.base_branch_score.to_s + "\n"
-        details += "Feature branch (#{Config.feature_branch}) score: " + Config.feature_branch_score.to_s + "\n"
+        details = "Base branch (#{Config.base_branch}) score: " + Config.base_branch_score.to_s + "\n"\
+                  "Feature branch (#{Config.feature_branch}) score: " + Config.feature_branch_score.to_s + "\n"
         File.open("#{Config.build_root_directory}/build_details.txt", 'w') { |file| file.write(details) }
       end
 
-      def degraded_files
-        files_affected = []
-        @feature_branch.map do |key, value|
-          base_branch_value = @base_branch[key.to_sym]
-          files_affected << key.to_s if base_branch_value && base_branch_value < value
-        end
+      # get the modified files in the feature branch
+      def modified_files
+        modified_files = SourceControlSystem::Git.modified_files
+        modified_files.split("\n").map do |line|
+          next if line.start_with?('D')
+          status, file_name = line.split("\t")
+          file_name
+        end.compact
       end
 
-      def build_cost_hash(cost_hash, analysed_modules)
-        complexity_hash = eval("@#{cost_hash}")
-        analysed_modules.map { |analysed_module| complexity_hash.merge!(:"#{analysed_module.name}" => analysed_module.cost) }
-      end
-
-      def critique(cost_hash)
-        @analysed_modules = AnalysersRunner.new(paths).run
-        build_cost_hash(cost_hash, @analysed_modules)
-        RevisionComparator.new(paths).set_statuses(@analysed_modules)
+      # store the analysed moduled collection based on the branch
+      def critique(branch)
+        module_collection = AnalysersRunner.new(paths).run
+        Config.send(:"#{branch}_collection=", module_collection)
+        RevisionComparator.new(paths).set_statuses(module_collection)
       end
     end
   end

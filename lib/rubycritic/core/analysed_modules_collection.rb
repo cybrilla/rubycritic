@@ -38,8 +38,8 @@ module RubyCritic
       @modules.each(&block)
     end
 
-    def where(module_names)
-      @modules.find_all { |mod| module_names.include? mod.name }
+    def where(module_paths)
+      @modules.find_all { |mod| module_paths.include? mod.path }
     end
 
     def to_json(*options)

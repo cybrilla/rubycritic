@@ -17,12 +17,16 @@ module RubyCritic
 end
 
 describe RubyCritic::Command::Compare do
+  before do
+    RubyCritic::Browser.any_instance.stubs(:open).returns(nil)
+    RubyCritic::SourceControlSystem::Git.stubs(:modified_files).returns('test/samples/compare_file.rb')
+  end
+
   describe 'compare' do
     it 'should compare two files of different branch' do
       options = ['-b', 'base_branch,feature_branch', '-t', '10', 'test/samples/compare_file.rb']
       options = RubyCritic::Cli::Options.new(options).parse.to_h
       RubyCritic::Config.set(options)
-      RubyCritic::Config.test_mode = true
       status_reporter = RubyCritic::Command::Compare.new(options).execute
       status_reporter.score.must_equal 6.25
       status_reporter.status_message.must_equal 'Score: 6.25'
