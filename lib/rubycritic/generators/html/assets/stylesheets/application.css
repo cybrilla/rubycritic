@@ -526,3 +526,11 @@ span.metric {
   display: inline-block;
   margin-left: 20px;
 }
+
+.branch{
+  font-size: 15px;
+  color: black;
+  font-weight: bold;
+  display: inline-block;
+  padding: 13px;
+}
