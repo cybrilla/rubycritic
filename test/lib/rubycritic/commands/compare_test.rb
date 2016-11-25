@@ -27,13 +27,13 @@ describe RubyCritic::Command::Compare do
   end
 
   describe 'compare' do
-    it 'should compare two files of different branch' do
+    it 'should compare a file of different branch' do
       options = ['-b', 'base_branch,feature_branch', '-t', '10', 'test/samples/compare_file.rb']
       options = RubyCritic::Cli::Options.new(options).parse.to_h
       RubyCritic::Config.set(options)
       status_reporter = RubyCritic::Command::Compare.new(options).execute
-      status_reporter.score.must_equal 6.25
-      status_reporter.status_message.must_equal 'Score: 6.25'
+      status_reporter.score.must_equal RubyCritic::Config.feature_branch_score
+      status_reporter.status_message.must_equal "Score: #{RubyCritic::Config.feature_branch_score}"
     end
 
     after do
