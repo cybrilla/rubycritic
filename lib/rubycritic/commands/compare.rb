@@ -16,7 +16,7 @@ module RubyCritic
       def execute
         Config.no_browser = true
         compare_branches
-        status_reporter.score = (Config.base_branch_score - Config.feature_branch_score).abs
+        status_reporter.score = Config.feature_branch_score
         status_reporter
       end
 
@@ -74,7 +74,11 @@ module RubyCritic
       # mark build as failed if the diff b/w the score of
       # two branches is greater than threshold value
       def compare_threshold
-        `exit 1` if mark_build_fail?
+        if mark_build_fail?
+          print("Threshold: #{Config.threshold_score}\n")
+          print("Difference: #{(Config.base_branch_score - Config.feature_branch_score).abs}\n")
+          abort('The score difference between the two branches is over the threshold.')
+        end
       end
 
       def mark_build_fail?
@@ -99,8 +103,8 @@ module RubyCritic
 
       # create a txt file with the branch score details
       def build_details
-        details = "Base branch (#{Config.base_branch}) score: " + Config.base_branch_score.to_s + "\n"\
-                  "Feature branch (#{Config.feature_branch}) score: " + Config.feature_branch_score.to_s + "\n"
+        details = "Base branch (#{Config.base_branch}) score: #{Config.base_branch_score.to_s} \n"\
+                  "Feature branch (#{Config.feature_branch}) score: #{Config.feature_branch_score.to_s} \n"
         File.open("#{Config.build_root_directory}/build_details.txt", 'w') { |file| file.write(details) }
       end
 
