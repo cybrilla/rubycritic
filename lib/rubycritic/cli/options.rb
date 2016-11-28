@@ -25,7 +25,7 @@ module RubyCritic
           end
 
           opts.on('-t', '--threshold-score [THRESHOLD_SCORE]',
-                  'Set a threshold score works only with -b option') do |threshold_score|
+                  'Set a threshold for score difference between two branches (works only with -b)') do |threshold_score|
             self.threshold_score = Integer(threshold_score)
           end
 

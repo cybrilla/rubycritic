@@ -11,7 +11,7 @@ module RubyCritic
     class Compare < Default
       def initialize(options)
         super
-        @number = 0
+        @build_number = 0
       end
 
       def execute
@@ -39,8 +39,8 @@ module RubyCritic
       def update_build_number
         build_file_location = '/tmp/build_count.txt'
         File.new(build_file_location, 'a') unless File.exist?(build_file_location)
-        @number = File.open(build_file_location).readlines.first.to_i + 1
-        File.write(build_file_location, @number)
+        @build_number = File.open(build_file_location).readlines.first.to_i + 1
+        File.write(build_file_location, @build_number)
       end
 
       def set_root_paths
@@ -94,7 +94,7 @@ module RubyCritic
       end
 
       def build_directory
-        "tmp/rubycritic/compare/builds/build_#{@number}"
+        "tmp/rubycritic/compare/builds/build_#{@build_number}"
       end
 
       # create a txt file with the branch score details

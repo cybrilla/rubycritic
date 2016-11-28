@@ -27,15 +27,15 @@ module RubyCritic
 
     def smell_location_path(location)
       smell_location = "#{location.pathname.sub_ext('.html')}#L#{location.line}"
-      if Config.mode == :compare_branches
-        "file://#{File.expand_path(Config.feature_root_directory)}/#{smell_location}"
+      if Config.compare_branches_mode?
+        file_path("#{File.expand_path(Config.feature_root_directory)}/#{smell_location}")
       else
         file_path("#{smell_location}.to_s")
       end
     end
 
     def code_index_path(root_directory)
-      "file://#{File.expand_path(root_directory)}/code_index.html"
+      file_path("#{File.expand_path(root_directory)}/code_index.html")
     end
 
     private

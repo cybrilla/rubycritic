@@ -36,6 +36,10 @@ module RubyCritic
       configuration.set(options)
     end
 
+    def self.compare_branches_mode?
+      Config.mode == :compare_branches
+    end
+
     def self.method_missing(method, *args, &block)
       configuration.public_send(method, *args, &block)
     end
