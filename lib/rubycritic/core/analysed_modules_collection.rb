@@ -27,13 +27,6 @@ module RubyCritic
       end
     end
 
-    def build_analysed_module(analysed_module)
-      AnalysedModule.new(pathname: analysed_module.pathname, name: analysed_module.name,
-                         smells: analysed_module.smells, churn: analysed_module.churn,
-                         committed_at: analysed_module.committed_at, complexity: analysed_module.complexity,
-                         duplication: analysed_module.duplication, methods_count: analysed_module.methods_count)
-    end
-
     def each(&block)
       @modules.each(&block)
     end
@@ -69,6 +62,13 @@ module RubyCritic
 
     def limited_cost_for(mod)
       [mod.cost, COST_LIMIT].min
+    end
+
+    def build_analysed_module(analysed_module)
+      AnalysedModule.new(pathname: analysed_module.pathname, name: analysed_module.name,
+                         smells: analysed_module.smells, churn: analysed_module.churn,
+                         committed_at: analysed_module.committed_at, complexity: analysed_module.complexity,
+                         duplication: analysed_module.duplication, methods_count: analysed_module.methods_count)
     end
   end
 end

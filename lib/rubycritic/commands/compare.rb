@@ -11,6 +11,7 @@ module RubyCritic
     class Compare < Default
       def initialize(options)
         super
+        @number = 0
       end
 
       def execute
@@ -48,7 +49,7 @@ module RubyCritic
         Config.build_root_directory = Pathname.new(build_directory)
       end
 
-      # switch branch and analyse files 
+      # switch branch and analyse files
       def analyse_branch(branch)
         SourceControlSystem::Git.switch_branch(Config.send(branch))
         critic = critique(branch)
@@ -60,7 +61,7 @@ module RubyCritic
       # generate report only for modified files
       def analyse_modified_files
         Config.no_browser = false
-        defected_modules = Config.feature_branch_collection.where(modified_files)
+        defected_modules = Config.feature_branch_collection.where(SourceControlSystem::Git.modified_files)
         analysed_modules = AnalysedModulesCollection.new(defected_modules.map(&:path), defected_modules)
         Config.root = build_directory
         report(analysed_modules)
@@ -74,19 +75,14 @@ module RubyCritic
       # mark build as failed if the diff b/w the score of
       # two branches is greater than threshold value
       def compare_threshold
-        if mark_build_fail?
-          print("Threshold: #{Config.threshold_score}\n")
-          print("Difference: #{(Config.base_branch_score - Config.feature_branch_score).abs}\n")
-          abort('The score difference between the two branches is over the threshold.')
-        end
+        return unless mark_build_fail?
+        print("Threshold: #{Config.threshold_score}\n")
+        print("Difference: #{(Config.base_branch_score - Config.feature_branch_score).abs}\n")
+        abort('The score difference between the two branches is over the threshold.')
       end
 
       def mark_build_fail?
-        threshold_values_set? && threshold_reached?
-      end
-
-      def threshold_values_set?
-        Config.threshold_score > 0
+        Config.threshold_score > 0 && threshold_reached?
       end
 
       def threshold_reached?
@@ -103,19 +99,9 @@ module RubyCritic
 
       # create a txt file with the branch score details
       def build_details
-        details = "Base branch (#{Config.base_branch}) score: #{Config.base_branch_score.to_s} \n"\
-                  "Feature branch (#{Config.feature_branch}) score: #{Config.feature_branch_score.to_s} \n"
+        details = "Base branch (#{Config.base_branch}) score: #{Config.base_branch_score} \n"\
+                  "Feature branch (#{Config.feature_branch}) score: #{Config.feature_branch_score} \n"
         File.open("#{Config.build_root_directory}/build_details.txt", 'w') { |file| file.write(details) }
-      end
-
-      # get the modified files in the feature branch
-      def modified_files
-        modified_files = SourceControlSystem::Git.modified_files
-        modified_files.split("\n").map do |line|
-          next if line.start_with?('D')
-          status, file_name = line.split("\t")
-          file_name
-        end.compact
       end
 
       # store the analysed moduled collection based on the branch

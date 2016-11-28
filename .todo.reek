@@ -98,6 +98,7 @@ TooManyStatements:
   - RubyCritic::Generator::Html::CodeFile#render
   - RubyCritic::Reporter#self.report_generator_class
   - RubyCritic::SourceLocator#deduplicate_symlinks
+  - RubyCritic::Command::Compare#compare_branches
 FeatureEnvy:
   exclude:
   - Parser::AST::Node#module_name
@@ -114,6 +115,7 @@ NestedIterators:
   - RubyCritic::Analyser::FlaySmells#run
   - RubyCritic::Cli::Options#parse
   - RubyCritic::Generator::HtmlReport#create_directories_and_files
+  - RubyCritic::AnalysedModulesCollection#initialize
 UtilityFunction:
   exclude:
   - RubyCritic::Analyser::FlaySmells#cost
@@ -131,6 +133,12 @@ UtilityFunction:
   - RubyCritic::SourceControlSystem::Git#stashes_count
   - RubyCritic::SourceControlSystem::Mercurial#date_of_last_commit
   - RubyCritic::SourceControlSystem::Mercurial#revisions_count
+  - RubyCritic::ViewHelpers#code_index_path
+  - RubyCritic::AnalysedModulesCollection#build_analysed_module
+  - RubyCritic::Command::Compare#branch_directory
+  - RubyCritic::Command::Compare#build_details
+  - RubyCritic::Command::Compare#threshold_reached?
+  - RubyCritic::Command::Compare#threshold_values_set?
 TooManyInstanceVariables:
   exclude:
   - RubyCritic::Cli::Options

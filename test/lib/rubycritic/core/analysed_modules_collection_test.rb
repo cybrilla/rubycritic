@@ -41,7 +41,11 @@ describe RubyCritic::AnalysedModulesCollection do
 
     context 'with a list of files and initializing analysed modules with pre existing values' do
       let(:paths) { %w(test/samples/empty.rb) }
-      let(:analysed_modules) { [RubyCritic::AnalysedModule.new(pathname: Pathname.new('test/samples/empty.rb'), name: 'Name', smells: [], churn: 2, committed_at: Time.now, complexity: 2, duplication: 0, methods_count: 2)] }
+      let(:analysed_modules) do
+        [RubyCritic::AnalysedModule.new(pathname: Pathname.new('test/samples/empty.rb'), name: 'Name', smells: [],
+                                        churn: 2, committed_at: Time.now, complexity: 2, duplication: 0,
+                                        methods_count: 2)]
+      end
 
       it 'registers one AnalysedModule element per existent file' do
         analysed_modules_collection = RubyCritic::AnalysedModulesCollection.new(paths, analysed_modules)
@@ -63,7 +67,7 @@ describe RubyCritic::AnalysedModulesCollection do
       let(:paths) { %w(test/samples/empty.rb test/samples/unparsable.rb) }
       let(:analysed_modules) do
         [RubyCritic::AnalysedModule.new(pathname: Pathname.new('test/samples/empty.rb'), name: 'Empty'),
-        RubyCritic::AnalysedModule.new(pathname: Pathname.new('test/samples/unparsable.rb'), name: 'Unparsable')] 
+         RubyCritic::AnalysedModule.new(pathname: Pathname.new('test/samples/unparsable.rb'), name: 'Unparsable')]
       end
 
       it 'registers one AnalysedModule element per existent file' do

@@ -21,7 +21,7 @@ Feature: RubyCritic can be controlled using command-line options
       """
       Usage: rubycritic [options] [paths]
           -p, --path [PATH]                Set path where report will be saved (tmp/rubycritic by default)
-          -b BASE_BRANCH,FEATURE_BRANCH,   Set branches
+          -b BASE_BRANCH,FEATURE_BRANCH,   Set branches to compare
               --branch
           -t [THRESHOLD_SCORE],            Set a threshold score works only with -b option
               --threshold-score

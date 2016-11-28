@@ -24,7 +24,8 @@ module RubyCritic
             self.mode = :compare_branches
           end
 
-          opts.on('-t', '--threshold-score [THRESHOLD_SCORE]', 'Set a threshold score works only with -b option') do |threshold_score|
+          opts.on('-t', '--threshold-score [THRESHOLD_SCORE]',
+                  'Set a threshold score works only with -b option') do |threshold_score|
             self.threshold_score = Integer(threshold_score)
           end
 

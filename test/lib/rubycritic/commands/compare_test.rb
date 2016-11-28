@@ -9,11 +9,9 @@ module RubyCritic
   module SourceControlSystem
     class Git < Base
       def self.switch_branch(branch)
-        File.open('test/samples/compare_file.rb', 'w') do
-          |file| file.truncate(0)
-        end
-        File.open('test/samples/compare_file.rb', 'w') do
-          |file| file.puts File.readlines("test/samples/#{branch}_file.rb")
+        File.open('test/samples/compare_file.rb', 'w') { |file| file.truncate(0) }
+        File.open('test/samples/compare_file.rb', 'w') do |file|
+          file.puts File.readlines("test/samples/#{branch}_file.rb")
         end
       end
     end
@@ -23,6 +21,8 @@ end
 describe RubyCritic::Command::Compare do
   before do
     RubyCritic::Browser.any_instance.stubs(:open).returns(nil)
+    RubyCritic::Reporter.stubs(:generate_report).returns(nil)
+    RubyCritic::Command::Compare.any_instance.stubs(:build_details).returns(nil)
     RubyCritic::SourceControlSystem::Git.stubs(:modified_files).returns('test/samples/compare_file.rb')
   end
 
