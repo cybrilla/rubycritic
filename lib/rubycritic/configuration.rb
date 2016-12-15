@@ -40,6 +40,10 @@ module RubyCritic
       Config.mode == :compare_branches
     end
 
+    def self.build_mode?
+      Config.mode == :compare_branches && !Config.no_browser
+    end
+
     def self.method_missing(method, *args, &block)
       configuration.public_send(method, *args, &block)
     end

@@ -23,8 +23,8 @@ Feature: RubyCritic can be controlled using command-line options
           -p, --path [PATH]                Set path where report will be saved (tmp/rubycritic by default)
           -b BASE_BRANCH,FEATURE_BRANCH,   Set branches to compare
               --branch
-          -t [THRESHOLD_SCORE],            Set a threshold for score difference between two branches (works only with -b)
-              --threshold-score
+          -t [MAX_DECREASE],               Set a threshold for score difference between two branches (works only with -b)
+              --maximum-decrease
           -f, --format [FORMAT]            Report smells in the given format:
                                              html (default; will open in a browser)
                                              json

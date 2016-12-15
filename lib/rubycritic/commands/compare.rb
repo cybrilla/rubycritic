@@ -15,7 +15,6 @@ module RubyCritic
       end
 
       def execute
-        Config.no_browser = true
         compare_branches
         status_reporter.score = Config.feature_branch_score
         status_reporter
@@ -28,8 +27,10 @@ module RubyCritic
       def compare_branches
         update_build_number
         set_root_paths
+        Config.no_browser = true
         analyse_branch(:base_branch)
         analyse_branch(:feature_branch)
+        Config.no_browser = false
         analyse_modified_files
         compare_code_quality
       end
@@ -60,9 +61,8 @@ module RubyCritic
 
       # generate report only for modified files
       def analyse_modified_files
-        Config.no_browser = false
-        defected_modules = Config.feature_branch_collection.where(SourceControlSystem::Git.modified_files)
-        analysed_modules = AnalysedModulesCollection.new(defected_modules.map(&:path), defected_modules)
+        modified_files = Config.feature_branch_collection.where(SourceControlSystem::Git.modified_files)
+        analysed_modules = AnalysedModulesCollection.new(modified_files.map(&:path), modified_files)
         Config.root = build_directory
         report(analysed_modules)
       end

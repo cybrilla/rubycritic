@@ -24,7 +24,7 @@ module RubyCritic
             self.mode = :compare_branches
           end
 
-          opts.on('-t', '--threshold-score [THRESHOLD_SCORE]',
+          opts.on('-t', '--maximum-decrease [MAX_DECREASE]',
                   'Set a threshold for score difference between two branches (works only with -b)') do |threshold_score|
             self.threshold_score = Integer(threshold_score)
           end

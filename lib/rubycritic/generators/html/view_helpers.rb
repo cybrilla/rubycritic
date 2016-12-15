@@ -30,7 +30,7 @@ module RubyCritic
       if Config.compare_branches_mode?
         file_path("#{File.expand_path(Config.feature_root_directory)}/#{smell_location}")
       else
-        file_path("#{smell_location}.to_s")
+        file_path(smell_location)
       end
     end
 

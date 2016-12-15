@@ -534,3 +534,14 @@ span.metric {
   display: inline-block;
   padding: 13px;
 }
+
+.green-color {
+  color: #00A900;
+}
+.red-color {
+  color: #ED0000;
+}
+.empty-span{
+  height: 17px;
+  width: 17px;
+}

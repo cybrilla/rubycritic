@@ -9,10 +9,7 @@ module RubyCritic
   module SourceControlSystem
     class Git < Base
       def self.switch_branch(branch)
-        File.open('test/samples/compare_file.rb', 'w') { |file| file.truncate(0) }
-        File.open('test/samples/compare_file.rb', 'w') do |file|
-          file.puts File.readlines("test/samples/#{branch}_file.rb")
-        end
+        FileUtils.cp "test/samples/#{branch}_file.rb", 'test/samples/compare_file.rb'
       end
     end
   end

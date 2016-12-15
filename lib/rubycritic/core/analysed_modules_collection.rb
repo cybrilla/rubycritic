@@ -35,6 +35,10 @@ module RubyCritic
       @modules.find_all { |mod| module_paths.include? mod.path }
     end
 
+    def find(module_path)
+      @modules.find { |mod| mod.pathname == module_path }
+    end
+
     def to_json(*options)
       @modules.to_json(*options)
     end
