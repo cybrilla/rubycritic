@@ -142,6 +142,9 @@ UtilityFunction:
 TooManyInstanceVariables:
   exclude:
   - RubyCritic::Cli::Options
+  - RubyCritic::Generator::Html::CodeFile
+  - RubyCritic::Generator::Html::Overview
+  - RubyCritic::Generator::Html::SmellsIndex
 ControlParameter:
   exclude:
   - RubyCritic::CommandFactory#self.command_class

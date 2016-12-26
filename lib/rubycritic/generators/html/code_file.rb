@@ -12,7 +12,7 @@ module RubyCritic
         def initialize(analysed_module)
           @analysed_module = analysed_module
           @pathname = @analysed_module.pathname
-          set_header_links if Config.compare_branches_mode?         
+          set_header_links if Config.compare_branches_mode?
         end
 
         def set_header_links
