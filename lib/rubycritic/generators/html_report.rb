@@ -20,7 +20,6 @@ module RubyCritic
         copy_assets_to_report_directory
         puts "New critique at #{report_location}"
         browser.open unless Config.no_browser
-        report_location if Config.compare_branches_mode?
       end
 
       def browser
@@ -65,7 +64,7 @@ module RubyCritic
       end
 
       def report_location
-        Config.compare_branches_mode? ? code_index_generator.file_href : overview_generator.file_href
+        overview_generator.file_href
       end
     end
   end

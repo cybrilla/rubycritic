@@ -34,8 +34,8 @@ module RubyCritic
       end
     end
 
-    def code_index_path(root_directory)
-      file_path("#{File.expand_path(root_directory)}/code_index.html")
+    def code_index_path(root_directory, file_name)
+      file_path("#{File.expand_path(root_directory)}/#{file_name}")
     end
 
     private
