@@ -86,7 +86,7 @@ module RubyCritic
       end
 
       def threshold_reached?
-        (Config.base_branch_score - Config.feature_branch_score).abs > Config.threshold_score
+        (Config.base_branch_score - Config.feature_branch_score) > Config.threshold_score
       end
 
       def branch_directory(branch)
