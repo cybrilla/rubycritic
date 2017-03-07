@@ -44,7 +44,13 @@ module RubyCritic
             self.minimum_score = Integer(min_score)
           end
 
-          opts.on('-m', '--mode-ci', 'Use CI mode (faster, but only analyses last commit)') do
+          opts.on('-m', '--mode-ci [BASE_BRANCH]', 'Use CI mode (faster, but only analyses last commit)') do |branch|
+            if branch
+              self.base_branch = branch
+            else
+              self.base_branch = 'master'
+            end
+            self.feature_branch = SourceControlSystem::Git.get_current_branch
             self.mode = :ci
           end
 

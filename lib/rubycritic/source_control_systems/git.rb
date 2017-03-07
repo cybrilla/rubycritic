@@ -52,6 +52,11 @@ module RubyCritic
         end.compact
       end
 
+      def self.get_current_branch
+        branch_list = `git branch`
+        branch_list.match(/\* \w*/)[0].gsub('* ','')
+      end
+
       private
 
       def stash_changes
